@@ -20,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Http;
 
 class ProductResource extends Resource
 {
@@ -28,7 +29,7 @@ class ProductResource extends Resource
     protected static ?string $navigationGroup = 'Menu principal';
     protected static ?string $navigationLabel = 'Productos';
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
-    
+
     protected static ?string $slug = "productos";
     protected static ?string $label = "Producto";
     protected static ?string $pluralLabel = "Productos";
@@ -50,7 +51,7 @@ class ProductResource extends Resource
                             ->required()
                             ->maxLength(20)
                             ->placeholder('Ej: FIC-0001'),
-                            
+
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required(),
@@ -72,6 +73,21 @@ class ProductResource extends Resource
                             ->relationship('category', 'name')
                             ->searchable()
                             ->preload()
+                            ->createOptionForm(CategoryResource::getFormSchema()),
+
+                        // Select::make('book')
+                        //     ->label('Libro')
+                        //     ->required()
+                        //     ->searchable()
+                        //     ->options(function (){
+                        //         $response = Http::timeout(5)->get('https://stephen-king-api.onrender.com/api/books');
+
+                        //         $data = $response->json()['data'];
+
+                        //         return collect($data)
+                        //             ->pluck('Title', 'id')
+                        //             ->toArray();
+                        //     })
                     ]),
                 Section::make('Imagen del producto')
                     ->schema([

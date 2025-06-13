@@ -23,20 +23,25 @@ class CategoryResource extends Resource
     protected static ?string $label = "Categoria";
     protected static ?string $pluralLabel = "Categorias";
     
+
+    public static function getFormSchema(): array
+    {
+        return [
+            TextInput::make('name')
+                ->label('Nombre')
+                ->required()
+                ->placeholder('Ej: Auriculares'),
+            
+            TextInput::make('summary')
+                ->label('Resumen')
+                ->required()
+                ->placeholder('Ej: Auriculares de alta calidad con cancelación de ruido'),
+        ];
+    }
+
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->label('Nombre')
-                    ->required()
-                    ->placeholder('Ej: Auriculares'),
-                
-                TextInput::make('summary')
-                    ->label('Resumen')
-                    ->required()
-                    ->placeholder('Ej: Auriculares de alta calidad con cancelación de ruido'),
-            ]);
+        return $form->schema(static::getFormSchema());
     }
 
     public static function table(Table $table): Table
