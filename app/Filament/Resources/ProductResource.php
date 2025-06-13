@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -115,24 +116,44 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('code')
-                    ->label('Codigo'),
+                    ->label('Codigo')
+                    ->searchable(),
 
                 ImageColumn::make('image')
                     ->size(50)
                     ->label('Codigo'),
 
                 TextColumn::make('name')
-                    ->label('Nombre'),
+                    ->label('Nombre')
+                    ->searchable(),
 
                 TextColumn::make('summary')
-                    ->label('Codigo'),
+                    ->label('Resumen'),
 
+                TextColumn::make('is_active')
+                    ->label('Estado')
+                    ->badge()
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Activo' : 'Inactivo'),
+                
                 TextColumn::make('created_at')
-                    ->label('Estado'),
+                    ->label('F. creación')
+                    ->toggleable()
+                    ->sortable()
+                    ->date(),
+
+                TextColumn::make('updated_at')
+                    ->label('F. actualización')
+                    ->toggleable()
+                    ->sortable()
+                    ->date(),
             ])
             ->filters([
-                //
+                SelectFilter::make('category_id')
+                    ->label('Categoria')
+                    ->relationship('category','name'),
             ])
+            ->actionsColumnLabel('Acciones')
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
