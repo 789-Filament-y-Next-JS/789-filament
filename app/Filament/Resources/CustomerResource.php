@@ -27,10 +27,9 @@ class CustomerResource extends Resource
     protected static ?string $label = "Cliente";
     protected static ?string $pluralLabel = "Clientes";
 
-    public static function form(Form $form): Form
+    public static function getFormSchema(): array
     {
-        return $form
-            ->schema([
+       return [
                 Section::make('Información del cliente')
                     ->columns(2)
                     ->schema([
@@ -72,7 +71,13 @@ class CustomerResource extends Resource
                             ->password()
                             ->maxLength(255),
                     ])
-            ]);
+            ];
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema(static::getFormSchema());
     }
 
     public static function table(Table $table): Table
