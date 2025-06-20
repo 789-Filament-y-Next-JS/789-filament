@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\Product;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -56,16 +58,20 @@ class OrderResource extends Resource
                             ->createOptionForm(
                                 CustomerResource::getFormSchema()
                             ),
-                        ]),
-                
+                        TextInput::make('note')
+                            ->label('Nota adicional')
+                    ]),
+
                 // CARRITO DE COMPRAS
                 Section::make('Carrito de compras')
+                    ->hidden(
+                        fn(Get $get): bool => empty($get('warehouse_id'))
+                    )
                     ->schema([
                         Repeater::make('orderProducts')
                             ->relationship()
                             ->columns(3)
                             ->schema([
-
                                 Select::make('product_id')
                                     ->label('Producto')
                                     ->live()
@@ -84,19 +90,83 @@ class OrderResource extends Resource
                                     ->required()
                                     ->minValue(1)
                                     ->default(1)
-                                    ->reactive(),
+                                    ->reactive()
+                                    ->rule(function (Get $get){
+                                        
+                                        $productId = $get('product_id');
+                                        $warehouseId = $get('../../warehouse_id');
+
+                                        $stock = Inventory::where('product_id', $productId)
+                                            ->where('warehouse_id', $warehouseId)
+                                            ->value('quantity') ?? 0;
+
+                                        return "max:$stock";
+
+                                    })
+                                    ->helperText(function (Get $get) {
+                                        $productId = $get('product_id');
+                                        $warehouseId = $get('../../warehouse_id');
+
+                                        $stock = Inventory::where('product_id', $productId)
+                                            ->where('warehouse_id', $warehouseId)
+                                            ->value('quantity') ?? 0;
+
+                                        return "Stock disponible $stock";
+                                    }),
 
                                 Placeholder::make('sub_total')
                                     ->label('Subtotal')
-                                    ->content(function (Get $get){
+                                    ->content(function (Get $get) {
                                         $productId = $get('product_id');
 
                                         $subTotal = $get('quantity') * (Product::find($productId)->price ?? 0);
 
                                         return number_format($subTotal, 2, ".", "");
                                     })
-
                             ])
+                            ->afterStateUpdated(function ($set, $state) {
+                                $total = 0;
+
+                                foreach ($state as $item) {
+                                    $productId = $item['product_id'];
+                                    $quantity = $item['quantity'] ?? 0;
+
+                                    $product = Product::find($productId);
+
+                                    $total += $quantity * ($product->price ?? 0);
+                                }
+
+                                $set('total', $total);
+                            })
+                            
+                            // ACTUALIZAR SUB TOTAL
+                            ->mutateRelationshipDataBeforeCreateUsing(function(array $data): array {
+                                $productId = $data['product_id'];
+                                $quantity = $data['quantity'] ?? 0;
+
+                                $product = Product::find($productId);
+
+                                $data["sub_total"] = $quantity * $product->price;
+
+                                return $data;
+                            }),
+                    ]),
+                Section::make('Totales a pagar')
+                    ->schema([
+                        Hidden::make('total')
+                            ->dehydrated()
+                            ->live(),
+
+
+                        Placeholder::make('')
+                            ->label('Total a pagar')
+                            ->columnSpan(2)
+                            ->reactive()
+                            ->content(function (Get $get) {
+                                $total = $get('total');
+                                return number_format($total, 2, '.', '');
+                            })
+
                     ])
             ]);
     }
@@ -105,17 +175,14 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('warehouse_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('warehouse.name')
+                    // ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('customer_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('customer.name')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('user.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('note')
                     ->searchable(),
