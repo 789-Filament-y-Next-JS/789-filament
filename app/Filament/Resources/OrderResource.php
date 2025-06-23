@@ -64,13 +64,17 @@ class OrderResource extends Resource
 
                 // CARRITO DE COMPRAS
                 Section::make('Carrito de compras')
-                    ->hidden(
-                        fn(Get $get): bool => empty($get('warehouse_id'))
-                    )
+                    // ->hidden(
+                    //     fn(Get $get): bool => empty($get('warehouse_id'))
+                    // )
                     ->schema([
                         Repeater::make('orderProducts')
                             ->relationship()
                             ->columns(3)
+                            ->extraAttributes([
+                                // "wire:poll.500ms" => "",
+                                "wire:poll.visible" => ""
+                            ])
                             ->schema([
                                 Select::make('product_id')
                                     ->label('Producto')
@@ -103,6 +107,9 @@ class OrderResource extends Resource
                                         return "max:$stock";
 
                                     })
+                                    ->validationMessages([
+                                        ["max" => "No hay stock suficiente"]
+                                    ])
                                     ->helperText(function (Get $get) {
                                         $productId = $get('product_id');
                                         $warehouseId = $get('../../warehouse_id');
