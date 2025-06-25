@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\CustomerResource\Widgets\NewCustomersOverview;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Resources\OrderResource\Widgets\NewOrdersChart;
 use App\Filament\Resources\OrderResource\Widgets\NewOrdersOverviewStat;
 use App\Filament\Resources\ProductResource\Widgets\ProductOverview;
@@ -63,6 +64,9 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            ->plugins([
+                FilamentShieldPlugin::make(),
             ])
             ->authMiddleware([
                 Authenticate::class,

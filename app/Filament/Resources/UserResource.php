@@ -7,6 +7,7 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -49,6 +50,13 @@ class UserResource extends Resource
                             ->label("Contraseña")
                             ->required()
                             ->maxLength(255),
+
+                        Select::make('roles')
+                            ->relationship('roles', 'name')
+                            ->label('Rol de acceso')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
                     ])
             ]);
     }
