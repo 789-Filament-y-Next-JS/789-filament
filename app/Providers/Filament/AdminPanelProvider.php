@@ -39,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 "primary" => Color::Indigo,
             ])
-            ->font('Montserrat')
+            ->font('Poppins')
             ->spa()
             
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
