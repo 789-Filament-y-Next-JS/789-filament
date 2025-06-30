@@ -49,7 +49,9 @@ class UserResource extends Resource
                             ->password()
                             ->label("Contraseña")
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->dehydrated(fn (?string $state): bool => filled($state))
+                            ->required(fn (string $context): bool => $context === 'create'),
 
                         Select::make('roles')
                             ->relationship('roles', 'name')
