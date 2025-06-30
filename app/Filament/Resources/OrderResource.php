@@ -64,9 +64,9 @@ class OrderResource extends Resource
 
                 // CARRITO DE COMPRAS
                 Section::make('Carrito de compras')
-                    // ->hidden(
-                    //     fn(Get $get): bool => empty($get('warehouse_id'))
-                    // )
+                    ->hidden(
+                        fn(Get $get): bool => empty($get('warehouse_id'))
+                    )
                     ->schema([
                         Repeater::make('orderProducts')
                             ->relationship()
@@ -108,7 +108,7 @@ class OrderResource extends Resource
 
                                     })
                                     ->validationMessages([
-                                        ["max" => "No hay stock suficiente"]
+                                        "max" => "No hay stock suficiente",
                                     ])
                                     ->helperText(function (Get $get) {
                                         $productId = $get('product_id');
@@ -125,8 +125,10 @@ class OrderResource extends Resource
                                     ->label('Subtotal')
                                     ->content(function (Get $get) {
                                         $productId = $get('product_id');
+                                        $quantity = $get('quantity') ?? 0;
+                                        $productPrice = Product::find($productId)->price ?? 0;
 
-                                        $subTotal = $get('quantity') * (Product::find($productId)->price ?? 0);
+                                        $subTotal = (float) $quantity * (float) $productPrice;
 
                                         return number_format($subTotal, 2, ".", "");
                                     })
@@ -140,7 +142,7 @@ class OrderResource extends Resource
 
                                     $product = Product::find($productId);
 
-                                    $total += $quantity * ($product->price ?? 0);
+                                    $total += (float) $quantity * (float) ($product->price ?? 0);
                                 }
 
                                 $set('total', $total);

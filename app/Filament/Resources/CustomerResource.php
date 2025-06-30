@@ -62,20 +62,20 @@ class CustomerResource extends Resource
 
                     Forms\Components\TextInput::make('nit')
                         ->label('Direccion de facturación')
-                        ->required()
                         ->maxLength(255)
                         ->unique(table: "customers", column: 'nit', ignorable: fn($record) => $record)
-                        ->rules([
-                            "unique:customers,nit"
-                        ])
                         ->validationMessages([
                             'unique' => 'El NIT ya está en uso.',
-                        ]),
+                        ])
+                        ->dehydrated(fn (?string $state): bool => filled($state))
+                        ->required(fn (string $context): bool => $context === 'create'),
 
                     Forms\Components\TextInput::make('password')
                         ->label('Contraseña')
                         ->password()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->dehydrated(fn(?string $state): bool => filled($state))
+                        ->required(fn(string $context): bool => $context === 'create'),
                 ])
         ];
     }
